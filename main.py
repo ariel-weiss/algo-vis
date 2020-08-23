@@ -56,7 +56,7 @@ class Node:
         self.color = BLACK
     def make_start(self):
         self.color = ORANGE
-    def makr_end(self):
+    def make_end(self):
         self.color = TURQUOISE
     def make_path(self):
         self.color = PURPLE
@@ -71,3 +71,110 @@ class Node:
 
     def __lt__(self, other):
         return False
+
+
+def h(p1,p2):
+    """
+    Heuristic function for Point1, Point2
+    :param p1: an (x1,y1) point
+    :param p2: an (x2,y2) point
+    :return: heuristic distance
+    """
+    x1,y1 = p1
+    x2,y2 = p2
+    return abs(x1-x2) + abs(y1-y2)
+
+def make_grid(rows,width):
+    """
+    Making the grid with rox*width Nodes
+    :param rows:
+    :param width:
+    :return: the newly created grid
+    """
+    grid = []
+    cell_width = width // rows
+    for i in range(rows):
+        grid.append([])
+        for j in range(rows):
+            node = Node(i,j,cell_width,rows)
+            grid[i].append(node)
+    return grid
+
+def draw_grid(win,rows,width):
+    """
+    Draw the grid lines
+    :param win:
+    :param rows:
+    :param width:
+    :return:
+    """
+    cell_width = width//rows
+    for i in range(rows):
+        pygame.draw.line(win,GREY,(0,i*cell_width),(width,i*cell_width))
+        for j in range(rows):
+            pygame.draw.line(win, GREY, (j * cell_width,0), (j * cell_width, width))
+
+def draw(win,grid,rows,width):
+    """
+    Draw the nodes in the given grid, and the grid line on top
+    :param win:
+    :param grid:
+    :param rows:
+    :param width:
+    :return:
+    """
+    win.fill(WHITE)
+    for row in grid:
+        for node in row:
+            node.draw(win)
+    draw_grid(win,rows,width)
+    pygame.display.update()
+
+def get_clicked_pos(pos,rows,width):
+    """
+    Helper function to get the mouse clicked position
+    :param pos:
+    :param rows:
+    :param width:
+    :return:
+    """
+    cell_width = width//rows
+    y,x = pos
+    row = y//cell_width
+    col = x//cell_width
+    return row,col
+
+def main_loop(win,width):
+    ROWS = 50
+    grid = make_grid(ROWS,width)
+    start = None
+    end = None
+    run = True
+    started = False
+    while run:
+        draw(win,grid,ROWS,WIDTH)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if started:
+                continue
+            ## Left clicked:
+            if pygame.mouse.get_pressed()[0]:
+                pos = pygame.mouse.get_pos()
+                row,col = get_clicked_pos(pos,ROWS,width)
+                node = grid[row][col]
+                if not start:
+                    start = node
+                    start.make_start()
+                elif not end:
+                    end = node
+                    end.make_end()
+                elif node != end and node != start:
+                    node.make_barrier()
+            ## Right clicked:
+            if pygame.mouse.get_pressed()[1]:
+                pass
+    pygame.quit()
+
+main_loop(WIN,WIDTH)
